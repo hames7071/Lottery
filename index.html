@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+ <head><script>window["__codeletBootstrap__"]=JSON.parse('{"A":"A","B":"20260703-05-6766c4c"}');</script><script src="/_sdk/f432b76fb310b513.telemetry_sdk.js" integrity="sha512-9FJQ55EKmmqhyyik8BhrMVfm0+iYYfb8uOlRsjtkxJMEI97qOVEI4PnHohDjQAtvAep0IOEpdQ64eki0sz62ug=="></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grand Lottery Machine</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&amp;family=Share+Tech+Mono&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <style>
+        body { font-family: 'Orbitron', sans-serif; }
+        .slot-box {
+            font-family: 'Share Tech Mono', monospace;
+            background: linear-gradient(180deg, #020617 0%, #1e293b 50%, #020617 100%);
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.8);
+            border: 2px solid #334155;
+            position: relative;
+            overflow: hidden;
+        }
+        .slot-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 30%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 100%);
+            pointer-events: none;
+        }
+        .slot-box.locked {
+            color: #fde047;
+            text-shadow: 0 0 15px rgba(253,224,71,0.8), 0 0 30px rgba(253,224,71,0.4);
+        }
+        .slot-box.spinning {
+            color: #94a3b8;
+            filter: blur(0.5px);
+        }
+        .btn-op {
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #0f172a;
+        }
+        .btn-op:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #0f172a;
+        }
+        .btn-op:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #confetti-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 50;
+            display: none;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { text-shadow: 0 0 10px rgba(250,204,21,0.5), 0 0 20px rgba(250,204,21,0.3); }
+            50% { text-shadow: 0 0 20px rgba(250,204,21,0.8), 0 0 40px rgba(250,204,21,0.5); }
+        }
+        .glow-pulse { animation: pulse-glow 2s ease-in-out infinite; }
+    </style>
+  <script src="/_sdk/0179d719c431a79e.data_sdk.js" type="text/javascript" integrity="sha512-OsRvJkI5GkC3MJQcgotQYotpzrMSX415GiKKgvYdxQEEkzD/fdchShO2FMSy0PJr/tiINMXOk5Vl2zAgg6bUiA=="></script>
+  <script src="/_sdk/0b3af1c300e720aa.resizing_sdk.js" type="text/javascript" integrity="sha512-nX1P6oXZmEY5wCI2lUVg3BwKu1cr0yi+ZpXgZ0Yn90vkSwvpmyzBMvOyD6VLJUtBwFI2dSrw1b6OvORxSggw3w=="></script>
+ </head>
+ <body data-template-id="__page-root" class="min-h-screen flex flex-col items-center justify-center py-10 px-4">
+  <canvas id="confetti-canvas"></canvas>
+  <div class="w-full max-w-5xl space-y-10">
+   <header class="text-center space-y-2">
+    <h1 data-template-id="main-title" class="canva-text text-4xl md:text-5xl font-black text-yellow-400 glow-pulse uppercase tracking-wider"></h1>
+    <p data-template-id="subtitle" class="canva-text text-sm md:text-base tracking-widest uppercase"></p>
+   </header>
+   <main data-template-id="machine-panel" class="canva-panel p-6 md:p-10 rounded-3xl border border-slate-700 shadow-2xl backdrop-blur-md">
+    <div class="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
+     <div class="flex flex-col items-center"><span data-template-id="label-company" class="canva-text text-xs mb-2 font-semibold uppercase tracking-wider"></span>
+      <div class="flex gap-2 bg-slate-900 p-3 rounded-xl border border-slate-700 shadow-inner">
+       <div class="slot-box w-14 h-20 md:w-20 md:h-28 rounded flex items-center justify-center text-4xl md:text-6xl font-bold text-slate-600" id="m1">
+        -
+       </div>
+       <div class="slot-box w-14 h-20 md:w-20 md:h-28 rounded flex items-center justify-center text-4xl md:text-6xl font-bold text-slate-600" id="m2">
+        -
+       </div>
+       <div class="slot-box w-14 h-20 md:w-20 md:h-28 rounded flex items-center justify-center text-4xl md:text-6xl font-bold text-slate-600" id="m3">
+        -
+       </div>
+      </div>
+     </div>
+     <div class="hidden md:block text-slate-600 text-5xl font-light">
+      -
+     </div>
+     <div class="flex flex-col items-center"><span data-template-id="label-roll1" class="canva-text text-xs mb-2 font-semibold uppercase tracking-wider"></span>
+      <div class="flex gap-2 bg-slate-900 p-3 rounded-xl border border-slate-700 shadow-inner">
+       <div class="slot-box w-14 h-20 md:w-20 md:h-28 rounded flex items-center justify-center text-4xl md:text-6xl font-bold text-slate-600" id="r1a">
+        -
+       </div>
+       <div class="slot-box w-14 h-20 md:w-20 md:h-28 rounded flex items-center justify-center text-4xl md:text-6xl font-bold text-slate-600" id="r1b">
+        -
+       </div>
+      </div>
+     </div>
+     <div class="hidden md:block text-slate-600 text-5xl font-light">
+      -
+     </div>
+     <div class="flex flex-col items-center"><span data-template-id="label-roll2" class="canva-text text-xs mb-2 font-semibold uppercase tracking-wider"></span>
+      <div class="flex gap-2 bg-slate-900 p-3 rounded-xl border border-slate-700 shadow-inner">
+       <div class="slot-box w-14 h-20 md:w-20 md:h-28 rounded flex items-center justify-center text-4xl md:text-6xl font-bold text-slate-600" id="r2a">
+        -
+       </div>
+       <div class="slot-box w-14 h-20 md:w-20 md:h-28 rounded flex items-center justify-center text-4xl md:text-6xl font-bold text-slate-600" id="r2b">
+        -
+       </div>
+      </div>
+     </div>
+     <div class="hidden md:block text-slate-600 text-5xl font-light">
+      -
+     </div>
+     <div class="flex flex-col items-center"><span data-template-id="label-final" class="canva-text text-xs mb-2 font-semibold uppercase tracking-wider"></span>
+      <div class="flex gap-2 bg-slate-900 p-3 rounded-xl border border-slate-700 shadow-inner">
+       <div class="slot-box w-14 h-20 md:w-20 md:h-28 rounded flex items-center justify-center text-4xl md:text-6xl font-bold text-slate-600" id="r3a">
+        -
+       </div>
+      </div>
+     </div>
+    </div>
+    <div id="result-area" class="mt-8 text-center hidden opacity-0 transition-opacity duration-1000">
+     <p data-template-id="result-label" class="canva-text text-lg mb-1"></p>
+     <div id="result-number" class="text-4xl md:text-5xl font-black text-green-400 tracking-widest glow-pulse">
+      ---
+     </div>
+    </div>
+   </main>
+   <section data-template-id="console-panel" class="canva-panel border border-slate-700 rounded-2xl p-6 shadow-xl max-w-3xl mx-auto">
+    <div class="flex items-center justify-between mb-6 border-b border-slate-700 pb-4">
+     <h2 data-template-id="console-title" class="canva-text text-xl font-bold flex items-center gap-2"></h2><button id="btnReset" data-template-id="reset-btn" class="canva-button text-sm px-4 py-2 rounded-lg transition-colors font-medium"></button>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+     <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 flex flex-col justify-between">
+      <div>
+       <div class="text-xs font-bold text-blue-400 mb-1">
+        STEP 1
+       </div><label data-template-id="input-label" class="canva-text block text-sm mb-2" for="manualInput"></label> <input type="text" id="manualInput" maxlength="3" placeholder="000" class="w-full bg-slate-950 border border-slate-600 rounded-lg px-3 py-2 text-center text-xl font-mono text-yellow-300 focus:outline-none focus:border-blue-500 mb-3" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+      </div><button id="btnLock" data-template-id="lock-btn" class="canva-button btn-op w-full font-bold py-3 px-4 rounded-lg"></button>
+     </div>
+     <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 flex flex-col justify-between">
+      <div>
+       <div class="text-xs font-bold text-purple-400 mb-1">
+        STEP 2
+       </div>
+       <p data-template-id="step2-desc" class="canva-text text-sm mb-4"></p>
+      </div><button id="btnRoll1" disabled data-template-id="roll1-btn" class="canva-button btn-op w-full font-bold py-3 px-4 rounded-lg"></button>
+     </div>
+     <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 flex flex-col justify-between">
+      <div>
+       <div class="text-xs font-bold text-pink-400 mb-1">
+        STEP 3
+       </div>
+       <p data-template-id="step3-desc" class="canva-text text-sm mb-4"></p>
+      </div><button id="btnRoll2" disabled data-template-id="roll2-btn" class="canva-button btn-op w-full font-bold py-3 px-4 rounded-lg"></button>
+     </div>
+     <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 flex flex-col justify-between">
+      <div>
+       <div class="text-xs font-bold text-green-400 mb-1">
+        STEP 4
+       </div>
+       <p data-template-id="step4-desc" class="canva-text text-sm mb-4"></p>
+      </div><button id="btnRoll3" disabled data-template-id="roll3-btn" class="canva-button btn-op w-full font-bold py-3 px-4 rounded-lg"></button>
+     </div>
+    </div>
+   </section>
+  </div>
+  <script src="/_sdk/e063511df281944a.editing_sdk.js" integrity="sha512-Xa8p4aPfoMxVnzxQE2WAG0FfoaPLxdjOJMfUZGm1yZosJTYmnNDvgLkJ2EoN0i3zxjeQVAzUMSXNvTKQVqbXyQ=="></script>
+  <script>
+        lucide.createIcons();
+
+        const $ = id => document.getElementById(id);
+        const slots = { m1:$('m1'),m2:$('m2'),m3:$('m3'),r1a:$('r1a'),r1b:$('r1b'),r2a:$('r2a'),r2b:$('r2b'),r3a:$('r3a') };
+        const result = { manual:'', roll1:'', roll2:'', roll3:'' };
+
+        function randDigit() { return Math.floor(Math.random()*10).toString(); }
+
+        function animateSlots(els, cb) {
+            const intervals = els.map(el => {
+                el.classList.add('spinning');
+                el.classList.remove('text-slate-600');
+                return setInterval(() => { el.innerText = randDigit(); }, 40);
+            });
+            els.forEach((el, i) => {
+                setTimeout(() => {
+                    clearInterval(intervals[i]);
+                    el.innerText = randDigit();
+                    el.classList.remove('spinning');
+                    el.classList.add('locked');
+                    if (i === els.length - 1) setTimeout(() => cb(els.map(e=>e.innerText).join('')), 300);
+                }, 1000 + i * 800);
+            });
+        }
+
+        $('btnLock').addEventListener('click', () => {
+            const v = $('manualInput').value;
+            if (v.length !== 3) return;
+            result.manual = v;
+            [slots.m1,slots.m2,slots.m3].forEach((el,i) => {
+                el.innerText = v[i];
+                el.classList.remove('text-slate-600');
+                el.classList.add('locked');
+            });
+            $('manualInput').disabled = true;
+            $('btnLock').disabled = true;
+            $('btnRoll1').disabled = false;
+        });
+
+        $('manualInput').addEventListener('keypress', e => { if(e.key==='Enter') $('btnLock').click(); });
+
+        $('btnRoll1').addEventListener('click', () => {
+            $('btnRoll1').disabled = true;
+            animateSlots([slots.r1a, slots.r1b], r => { result.roll1=r; $('btnRoll2').disabled=false; });
+        });
+
+        $('btnRoll2').addEventListener('click', () => {
+            $('btnRoll2').disabled = true;
+            animateSlots([slots.r2a, slots.r2b], r => { result.roll2=r; $('btnRoll3').disabled=false; });
+        });
+
+        $('btnRoll3').addEventListener('click', () => {
+            $('btnRoll3').disabled = true;
+            animateSlots([slots.r3a], r => {
+                result.roll3 = r;
+                const area = $('result-area');
+                $('result-number').innerText = `${result.manual} - ${result.roll1} - ${result.roll2} - ${result.roll3}`;
+                area.classList.remove('hidden');
+                setTimeout(() => { area.classList.remove('opacity-0'); area.classList.add('opacity-100'); startConfetti(); }, 50);
+            });
+        });
+
+        $('btnReset').addEventListener('click', () => {
+            result.manual=''; result.roll1=''; result.roll2=''; result.roll3='';
+            $('manualInput').disabled=false; $('manualInput').value='';
+            $('btnLock').disabled=false;
+            $('btnRoll1').disabled=true; $('btnRoll2').disabled=true; $('btnRoll3').disabled=true;
+            Object.values(slots).forEach(el => { el.innerText='-'; el.className='slot-box w-14 h-20 md:w-20 md:h-28 rounded flex items-center justify-center text-4xl md:text-6xl font-bold text-slate-600'; });
+            const area=$('result-area'); area.classList.add('opacity-0'); setTimeout(()=>area.classList.add('hidden'),500);
+            stopConfetti();
+        });
+
+        // Confetti
+        let confettiRaf;
+        function startConfetti() {
+            const c=$('confetti-canvas'); c.style.display='block';
+            const ctx=c.getContext('2d'); c.width=window.innerWidth; c.height=window.innerHeight;
+            const pieces=Array.from({length:100},()=>({x:Math.random()*c.width,y:Math.random()*c.height-c.height,w:Math.random()*10+5,h:Math.random()*10+5,color:['#fde047','#38bdf8','#fb7185','#a78bfa','#4ade80'][Math.floor(Math.random()*5)],sy:Math.random()*3+2,sx:Math.random()*2-1,r:Math.random()*360,rs:Math.random()*5-2.5}));
+            function draw(){ctx.clearRect(0,0,c.width,c.height);pieces.forEach(p=>{p.y+=p.sy;p.x+=p.sx;p.r+=p.rs;if(p.y>c.height){p.y=-20;p.x=Math.random()*c.width;}ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r*Math.PI/180);ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();});confettiRaf=requestAnimationFrame(draw);}
+            draw(); setTimeout(stopConfetti,5000);
+        }
+        function stopConfetti(){cancelAnimationFrame(confettiRaf);const c=$('confetti-canvas');c.getContext('2d').clearRect(0,0,c.width,c.height);c.style.display='none';}
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a167a190c407aa24',t:'MTc4MzI2NzczNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
